@@ -9,7 +9,7 @@ import Interfaces = require('../models/interfaces');
 import { ConnectionStore } from '../models/connectionStore';
 import { ConnectionUI } from '../views/connectionUI';
 import StatusView from '../views/statusView';
-import SqlToolsServerClient from '../languageservice/serviceclient';
+import { ISqlToolsServiceClient, ServiceClientLocator } from '../languageservice/serviceclient';
 import { IPrompter } from '../prompts/question';
 import Telemetry from '../models/telemetry';
 import VscodeWrapper from './vscodeWrapper';
@@ -74,7 +74,7 @@ export default class ConnectionManager {
     constructor(context: vscode.ExtensionContext,
                 statusView: StatusView,
                 prompter: IPrompter,
-                private _client?: SqlToolsServerClient,
+                private _client?: ISqlToolsServiceClient,
                 private _vscodeWrapper?: VscodeWrapper,
                 private _connectionStore?: ConnectionStore) {
         this._context = context;
@@ -83,7 +83,7 @@ export default class ConnectionManager {
         this._connections = {};
 
         if (!this.client) {
-            this.client = SqlToolsServerClient.instance;
+            this.client = ServiceClientLocator.instance;
         }
         if (!this.vscodeWrapper) {
             this.vscodeWrapper = new VscodeWrapper();
@@ -119,14 +119,14 @@ export default class ConnectionManager {
     /**
      * Exposed for testing purposes
      */
-    public get client(): SqlToolsServerClient {
+    public get client(): ISqlToolsServiceClient {
         return this._client;
     }
 
     /**
      * Exposed for testing purposes
      */
-    public set client(client: SqlToolsServerClient) {
+    public set client(client: ISqlToolsServiceClient) {
         this._client = client;
     }
 

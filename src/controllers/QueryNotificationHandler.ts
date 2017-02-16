@@ -3,7 +3,7 @@
 *  service layer
 */
 import QueryRunner from './QueryRunner';
-import SqlToolsServiceClient from '../languageservice/serviceclient';
+import { ServiceClientLocator } from '../languageservice/serviceclient';
 import {
     QueryExecuteCompleteNotification,
     QueryExecuteBatchStartNotification,
@@ -34,11 +34,11 @@ export class QueryNotificationHandler {
 
     // register the handler to handle notifications for queries
     private initialize(): void {
-        SqlToolsServiceClient.instance.onNotification(QueryExecuteCompleteNotification.type, this.handleQueryCompleteNotification());
-        SqlToolsServiceClient.instance.onNotification(QueryExecuteBatchStartNotification.type, this.handleBatchStartNotification());
-        SqlToolsServiceClient.instance.onNotification(QueryExecuteBatchCompleteNotification.type, this.handleBatchCompleteNotification());
-        SqlToolsServiceClient.instance.onNotification(QueryExecuteResultSetCompleteNotification.type, this.handleResultSetCompleteNotification());
-        SqlToolsServiceClient.instance.onNotification(QueryExecuteMessageNotification.type, this.handleMessageNotification());
+        ServiceClientLocator.instance.onNotification(QueryExecuteCompleteNotification.type, this.handleQueryCompleteNotification());
+        ServiceClientLocator.instance.onNotification(QueryExecuteBatchStartNotification.type, this.handleBatchStartNotification());
+        ServiceClientLocator.instance.onNotification(QueryExecuteBatchCompleteNotification.type, this.handleBatchCompleteNotification());
+        ServiceClientLocator.instance.onNotification(QueryExecuteResultSetCompleteNotification.type, this.handleResultSetCompleteNotification());
+        ServiceClientLocator.instance.onNotification(QueryExecuteMessageNotification.type, this.handleMessageNotification());
     }
 
     // Registers queryRunners with their uris to distribute notifications.

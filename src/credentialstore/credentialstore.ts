@@ -6,7 +6,7 @@
 
 import * as Contracts from '../models/contracts';
 import { ICredentialStore } from './icredentialstore';
-import SqlToolsServerClient from '../languageservice/serviceclient';
+import { ISqlToolsServiceClient, ServiceClientLocator } from '../languageservice/serviceclient';
 
 /**
  * Implements a credential storage for Windows, Mac (darwin), or Linux.
@@ -15,9 +15,9 @@ import SqlToolsServerClient from '../languageservice/serviceclient';
  */
 export class CredentialStore implements ICredentialStore {
 
-    constructor(private _client?: SqlToolsServerClient) {
+    constructor(private _client?: ISqlToolsServiceClient) {
         if (!this._client) {
-            this._client = SqlToolsServerClient.instance;
+            this._client = ServiceClientLocator.instance;
         }
     }
 
