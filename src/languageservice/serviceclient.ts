@@ -24,6 +24,7 @@ import {PlatformInformation} from '../models/platform';
 import {ServerInitializationResult, ServerStatusView} from './serverStatus';
 import StatusView from '../views/statusView';
 import * as LanguageServiceContracts from '../models/contracts/languageService';
+import BigQueryServiceClient from './bigquery';
 
 let opener = require('opener');
 let _channel: OutputChannel = undefined;
@@ -125,7 +126,7 @@ export interface ISqlToolsServiceClient {
 
 export class ServiceClientLocator {
     public static get instance(): ISqlToolsServiceClient {
-        return SqlToolsServiceClient.instance;
+        return BigQueryServiceClient.instance;
     }
 }
 
