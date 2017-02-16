@@ -24,6 +24,7 @@ import {PlatformInformation} from '../models/platform';
 import {ServerInitializationResult, ServerStatusView} from './serverStatus';
 import StatusView from '../views/statusView';
 import * as LanguageServiceContracts from '../models/contracts/languageService';
+import BigQueryServiceClient from './bigquery';
 
 let opener = require('opener');
 let _channel: OutputChannel = undefined;
@@ -104,8 +105,34 @@ class LanguageClientErrorHandler {
     }
 }
 
+export interface ISqlToolsServiceClient {
+    initialize(context: ExtensionContext): Promise<ServerInitializationResult>;
+
+    /**
+     * Send a request to the service client
+     * @param type The of the request to make
+     * @param params The params to pass with the request
+     * @returns A thenable object for when the request receives a response
+     */
+    sendRequest<P, R, E>(type: RequestType<P, R, E>, params?: P): Thenable<R>;
+
+    /**
+     * Register a handler for a notification type
+     * @param type The notification type to register the handler for
+     * @param handler The handler to register
+     */
+    onNotification<P>(type: NotificationType<P>, handler: NotificationHandler<P>): void;
+}
+
+export class ServiceClientLocator {
+    public static get instance(): ISqlToolsServiceClient {
+        return BigQueryServiceClient.instance;
+    }
+}
+
+
 // The Service Client class handles communication with the VS Code LanguageClient
-export default class SqlToolsServiceClient {
+export default class SqlToolsServiceClient implements ISqlToolsServiceClient {
     // singleton instance
     private static _instance: SqlToolsServiceClient = undefined;
 

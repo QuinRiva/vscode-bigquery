@@ -2,7 +2,7 @@
 import { EventEmitter } from 'events';
 
 import StatusView from '../views/statusView';
-import SqlToolsServerClient from '../languageservice/serviceclient';
+import { ISqlToolsServiceClient, ServiceClientLocator } from '../languageservice/serviceclient';
 import {QueryNotificationHandler} from './QueryNotificationHandler';
 import VscodeWrapper from './vscodeWrapper';
 import { BatchSummary, QueryExecuteParams, QueryExecuteRequest,
@@ -42,11 +42,11 @@ export default class QueryRunner {
     constructor(private _ownerUri: string,
                 private _editorTitle: string,
                 private _statusView: StatusView,
-                private _client?: SqlToolsServerClient,
+                private _client?: ISqlToolsServiceClient,
                 private _notificationHandler?: QueryNotificationHandler,
                 private _vscodeWrapper?: VscodeWrapper) {
         if (!_client) {
-            this._client = SqlToolsServerClient.instance;
+            this._client = ServiceClientLocator.instance;
         }
 
         if (!_notificationHandler) {

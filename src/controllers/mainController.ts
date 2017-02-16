@@ -11,7 +11,7 @@ import Utils = require('../models/utils');
 import { SqlOutputContentProvider } from '../models/SqlOutputContentProvider';
 import StatusView from '../views/statusView';
 import ConnectionManager from './connectionManager';
-import SqlToolsServerClient from '../languageservice/serviceclient';
+import { ServiceClientLocator } from '../languageservice/serviceclient';
 import { IPrompter } from '../prompts/question';
 import CodeAdapter from '../prompts/adapter';
 import Telemetry from '../models/telemetry';
@@ -134,7 +134,7 @@ export default class MainController implements vscode.Disposable {
 
         // initialize language service client
         return new Promise<boolean>( (resolve, reject) => {
-                SqlToolsServerClient.instance.initialize(self._context).then(serverResult => {
+                ServiceClientLocator.instance.initialize(self._context).then(serverResult => {
 
                 // Init status bar
                 self._statusview = new StatusView();

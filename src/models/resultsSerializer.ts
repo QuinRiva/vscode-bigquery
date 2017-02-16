@@ -4,7 +4,7 @@ import Constants = require('./constants');
 import os = require('os');
 import fs = require('fs');
 import Interfaces = require('./interfaces');
-import SqlToolsServerClient from '../languageservice/serviceclient';
+import { ISqlToolsServiceClient, ServiceClientLocator } from '../languageservice/serviceclient';
 import * as Contracts from '../models/contracts';
 import {RequestType} from 'vscode-languageclient';
 import * as Utils from '../models/utils';
@@ -17,7 +17,7 @@ import Telemetry from '../models/telemetry';
  *  Handles save results request from the context menu of slickGrid
  */
 export default class ResultsSerializer {
-    private _client: SqlToolsServerClient;
+    private _client: ISqlToolsServiceClient;
     private _prompter: IPrompter;
     private _vscodeWrapper: VscodeWrapper;
     private _uri: string;
@@ -25,12 +25,12 @@ export default class ResultsSerializer {
     private _isTempFile: boolean;
 
 
-    constructor(client?: SqlToolsServerClient, prompter?: IPrompter, vscodeWrapper?: VscodeWrapper) {
+    constructor(client?: ISqlToolsServiceClient, prompter?: IPrompter, vscodeWrapper?: VscodeWrapper) {
 
         if (client) {
             this._client = client;
         } else {
-            this._client = SqlToolsServerClient.instance;
+            this._client = ServiceClientLocator.instance;
         }
         if (prompter) {
             this._prompter = prompter;
