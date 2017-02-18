@@ -6,9 +6,11 @@
 'use strict';
 import * as events from 'events';
 import vscode = require('vscode');
-import Constants = require('../models/constants');
+import Constants = require('../constants/constants');
+import LocalizedConstants = require('../constants/localizedConstants');
 import Utils = require('../models/utils');
 import { SqlOutputContentProvider } from '../models/SqlOutputContentProvider';
+import { RebuildIntelliSenseNotification } from '../models/contracts/languageService';
 import StatusView from '../views/statusView';
 import ConnectionManager from './connectionManager';
 import { ServiceClientLocator } from '../languageservice/serviceclient';
@@ -78,7 +80,7 @@ export default class MainController implements vscode.Disposable {
      * Deactivates the extension
      */
     public deactivate(): void {
-        Utils.logDebug(Constants.extensionDeactivated);
+        Utils.logDebug(LocalizedConstants.extensionDeactivated);
         this.onDisconnect();
         this._statusview.dispose();
     }
@@ -108,6 +110,8 @@ export default class MainController implements vscode.Disposable {
         this._event.on(Constants.cmdShowGettingStarted, () => { self.launchGettingStartedPage(); });
         this.registerCommand(Constants.cmdNewQuery);
         this._event.on(Constants.cmdNewQuery, () => { self.runAndLogErrors(self.onNewQuery(), 'onNewQuery'); });
+        this.registerCommand(Constants.cmdRebuildIntelliSenseCache);
+        this._event.on(Constants.cmdRebuildIntelliSenseCache, () => { self.onRebuildIntelliSense(); });
 
         // this._vscodeWrapper = new VscodeWrapper();
 
@@ -162,7 +166,7 @@ export default class MainController implements vscode.Disposable {
 
                 self.showReleaseNotesPrompt();
 
-                Utils.logDebug(Constants.extensionActivated);
+                Utils.logDebug(LocalizedConstants.extensionActivated);
                 self._initialized = true;
                 resolve(true);
             }).catch(err => {
@@ -228,6 +232,23 @@ export default class MainController implements vscode.Disposable {
     }
 
     /**
+     * Clear and rebuild the IntelliSense cache
+     */
+    public onRebuildIntelliSense(): void {
+        if (this.CanRunCommand()) {
+            const fileUri = this._vscodeWrapper.activeTextEditorUri;
+            if (fileUri && this._vscodeWrapper.isEditingSqlFile) {
+                this._statusview.languageServiceStatusChanged(fileUri, LocalizedConstants.updatingIntelliSenseStatus);
+                SqlToolsServerClient.instance.sendNotification(RebuildIntelliSenseNotification.type, {
+                    ownerUri: fileUri
+                });
+            } else {
+                this._vscodeWrapper.showWarningMessage(LocalizedConstants.msgOpenSqlFile);
+            }
+        }
+    }
+
+    /**
      * get the T-SQL query from the editor, run it and show output
      */
     public onRunQuery(): void {
@@ -243,7 +264,7 @@ export default class MainController implements vscode.Disposable {
                         self.onRunQuery();
                     }
                 }).catch(err => {
-                    self._vscodeWrapper.showErrorMessage(Constants.msgError + err);
+                    self._vscodeWrapper.showErrorMessage(LocalizedConstants.msgError + err);
                 });
             } else if (!this._connectionMgr.isConnected(this._vscodeWrapper.activeTextEditorUri)) {
                 // If we are disconnected, prompt the user to choose a connection before executing
@@ -252,7 +273,7 @@ export default class MainController implements vscode.Disposable {
                         self.onRunQuery();
                     }
                 }).catch(err => {
-                    self._vscodeWrapper.showErrorMessage(Constants.msgError + err);
+                    self._vscodeWrapper.showErrorMessage(LocalizedConstants.msgError + err);
                 });
             } else {
                 let editor = this._vscodeWrapper.activeTextEditor;
@@ -294,7 +315,7 @@ export default class MainController implements vscode.Disposable {
     private runAndLogErrors<T>(promise: Promise<T>, handlerName: string): Promise<T> {
         let self = this;
         return promise.catch(err => {
-            self._vscodeWrapper.showErrorMessage(Constants.msgError + err);
+            self._vscodeWrapper.showErrorMessage(LocalizedConstants.msgError + err);
             Telemetry.sendTelemetryEventForException(err, handlerName);
         });
     }
@@ -320,7 +341,7 @@ export default class MainController implements vscode.Disposable {
      */
     private CanRunCommand(): boolean {
         if (this._connectionMgr === undefined) {
-            Utils.showErrorMsg(Constants.extensionNotInitializedError);
+            Utils.showErrorMsg(LocalizedConstants.extensionNotInitializedError);
             return false;
         }
         return true;
@@ -424,7 +445,7 @@ export default class MainController implements vscode.Disposable {
         // If there was a saveTextDoc event just before this closeTextDoc event and it
         // was untitled then we know it was an untitled save
         if (this._lastSavedUri &&
-                closedDocumentUriScheme === Constants.untitledScheme &&
+                closedDocumentUriScheme === LocalizedConstants.untitledScheme &&
                 this._lastSavedTimer.getDuration() < Constants.untitledSaveTimeThreshold) {
             // Untitled file was saved and connection will be transfered
             this._connectionMgr.transferFileConnection(closedDocumentUri, this._lastSavedUri);

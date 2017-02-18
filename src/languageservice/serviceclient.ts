@@ -14,7 +14,7 @@ import Telemetry from '../models/telemetry';
 import * as Utils from '../models/utils';
 import {VersionRequest} from '../models/contracts';
 import {Logger} from '../models/logger';
-import Constants = require('../models/constants');
+import Constants = require('../constants/constants');
 import ServerProvider from './server';
 import ServiceDownloadProvider from './serviceDownloadProvider';
 import DecompressProvider from './decompressProvider';
@@ -25,6 +25,7 @@ import {ServerInitializationResult, ServerStatusView} from './serverStatus';
 import StatusView from '../views/statusView';
 import * as LanguageServiceContracts from '../models/contracts/languageService';
 import BigQueryServiceClient from './bigquery';
+let vscode = require('vscode');
 
 let opener = require('opener');
 let _channel: OutputChannel = undefined;
@@ -321,14 +322,23 @@ export default class SqlToolsServiceClient implements ISqlToolsServiceClient {
             serverCommand = 'dotnet';
         }
 
-        // Enable diagnostic logging in the service if it is configured
+        // Get the extenion's configuration
         let config = workspace.getConfiguration(Constants.extensionConfigSectionName);
         if (config) {
+            // Enable diagnostic logging in the service if it is configured
             let logDebugInfo = config[Constants.configLogDebugInfo];
             if (logDebugInfo) {
                 serverArgs.push('--enable-logging');
             }
+
+            // Send Locale for sqltoolsservice localization
+            let applyLocalization = config[Constants.configApplyLocalization];
+            if (applyLocalization) {
+                let locale = vscode.env.language;
+                serverArgs.push('--locale ' + locale);
+            }
         }
+
 
         // run the service host using dotnet.exe from the path
         let serverOptions: ServerOptions = {  command: serverCommand, args: serverArgs, transport: TransportKind.stdio  };
@@ -344,6 +354,16 @@ export default class SqlToolsServiceClient implements ISqlToolsServiceClient {
     public sendRequest<P, R, E>(type: RequestType<P, R, E>, params?: P): Thenable<R> {
         if (this.client !== undefined) {
             return this.client.sendRequest(type, params);
+        }
+    }
+
+    /**
+     * Send a notification to the service client
+     * @param params The params to pass with the notification
+     */
+    public sendNotification<P>(type: NotificationType<P>, params?: P): void {
+        if (this.client !== undefined) {
+            this.client.sendNotification(type, params);
         }
     }
 
