@@ -239,7 +239,7 @@ export default class MainController implements vscode.Disposable {
             const fileUri = this._vscodeWrapper.activeTextEditorUri;
             if (fileUri && this._vscodeWrapper.isEditingSqlFile) {
                 this._statusview.languageServiceStatusChanged(fileUri, LocalizedConstants.updatingIntelliSenseStatus);
-                SqlToolsServerClient.instance.sendNotification(RebuildIntelliSenseNotification.type, {
+                ServiceClientLocator.instance.sendNotification(RebuildIntelliSenseNotification.type, {
                     ownerUri: fileUri
                 });
             } else {

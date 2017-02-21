@@ -123,6 +123,7 @@ export interface ISqlToolsServiceClient {
      * @param handler The handler to register
      */
     onNotification<P>(type: NotificationType<P>, handler: NotificationHandler<P>): void;
+    sendNotification<P>(type: NotificationType<P>, params?: P): void;
 }
 
 export class ServiceClientLocator {
