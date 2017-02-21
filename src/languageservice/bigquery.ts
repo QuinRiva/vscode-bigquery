@@ -7,7 +7,7 @@ import {
 } from 'vscode-languageclient';
 
 import {Logger} from '../models/logger';
-import Constants = require('../models/constants');
+import Constants = require('../constants/constants');
 import { ServerInitializationResult } from './serverStatus';
 import StatusView from '../views/statusView';
 import * as LanguageServiceContracts from '../models/contracts/languageService';
@@ -65,7 +65,7 @@ export default class BigQueryServiceClient implements ISqlToolsServiceClient {
         const clientOptions: LanguageClientOptions = {
             documentSelector: ['sql'],
             synchronize: {
-                configurationSection: 'mssql'
+                configurationSection: ['mssql', 'bigquery']
             }
         };
 
@@ -91,6 +91,16 @@ export default class BigQueryServiceClient implements ISqlToolsServiceClient {
     public onNotification<P>(type: NotificationType<P>, handler: NotificationHandler<P>): void {
         if (this._client !== undefined) {
              return this._client.onNotification(type, handler);
+        }
+    }
+
+    /**
+     * Send a notification to the service client
+     * @param params The params to pass with the notification
+     */
+    public sendNotification<P>(type: NotificationType<P>, params?: P): void {
+        if (this._client !== undefined) {
+            this._client.sendNotification(type, params);
         }
     }
 }
